@@ -1,3 +1,5 @@
+import random
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,7 +23,7 @@ def create_graph(missions):
     labels = nx.get_edge_attributes(G, 'weight')
     for ind in labels:
         labels[ind]=round(labels[ind],2)
-    nx.draw(G, pos, with_labels=True, node_size=500, node_color='skyblue', font_size=10, font_weight='bold')
+    nx.draw(G, pos, with_labels=True, node_size=100, node_color='skyblue', font_size=10)
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
     plt.savefig('Graph.pdf')
@@ -30,12 +32,19 @@ def save_drone_data(drones):
     with open('drone_data.json', 'w') as json_file:
         json.dump(drones, json_file)
 
+def get_random_instance(N_nodes):
+    missions={'Depot': [(0, 0), 0]}
+    for i in range(N_nodes):
+        missions[i]=[(random.randrange(-10,10),random.randrange(-10,10)),2]
+    return missions
+
 
 
 if __name__ == "__main__":
     # [position, duration]
-    missions = {'depot': [(0, 0), 0], 'A': [(1, 4), 2], 'B': [(2, 3,), 2], 'C': [(4, 3), 2], 'D': [(3, -3), 2],
+    missions = {'Depot': [(0, 0), 0], 'A': [(1, 4), 2], 'B': [(2, 3,), 2], 'C': [(4, 3), 2], 'D': [(3, -3), 2],
                 'E': [(1, -3), 2], 'F': [(-3, -1), 2], 'G': [(-4, 0), 2]}
+
     # [velocity, max energy]
     drones = {'quadro1':[5,30], 'quadro2':[5,30],'quadro3':[5,30]}
 
