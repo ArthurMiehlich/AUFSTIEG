@@ -5,7 +5,6 @@ import networkx as nx
 import json
 import os
 
-
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                              VRP generell funktioniert                                             ##
@@ -30,13 +29,16 @@ def VRP(Graph, drone_data):
     for d in range(N_drones):
         for n in Graph.nodes:
             y[d, n] = m.addVar(vtype=GRB.CONTINUOUS, lb=0, name=f'y_{d}_{n}')
-        y[d, 'Depot'] = 0
+        #y[d, 'Depot_s'] = 0
 
     # variable denoting time of drone d at node n
     t = {}
     for d in range(N_drones):
         for n in Graph.nodes:
-            t[d, n] = m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub=100, name=f't_{d}_{n}')
+            t[d, n] = m.addVar(vtype=GRB.CONTINUOUS, lb=0, name=f't_{d}_{n}')
+        #t[d, 'Depot_s'] = 0
+
+    maxTime = m.addVar(vtype=GRB.CONTINUOUS, lb=0, name='maxTime')
 
     # objective function: minimize total flight time
     obj = gp.quicksum(
@@ -45,12 +47,12 @@ def VRP(Graph, drone_data):
                 Graph.get_edge_data(u, v)['weight'] * (x[d, u, v])
                 for u in Graph.nodes if u != v)
             for v in Graph.nodes)
-        for d in range(N_drones))
+        for d in range(N_drones))+maxTime
     m.setObjective(obj, GRB.MINIMIZE)
 
     # customer constraints
     for j in Graph.nodes:
-        if j != 'Depot':
+        if j not in ['Depot_s', 'Depot_t']:
             m.addConstr(
                 1 == gp.quicksum(gp.quicksum(x[d, i, j] for i in Graph.nodes if i != j) for d in range(N_drones)),
                 name=f'visit_{j}')
@@ -61,14 +63,15 @@ def VRP(Graph, drone_data):
     # flow constraints
     for d in range(N_drones):
         for u in Graph.nodes:
-            m.addConstr(0 == gp.quicksum(x[d, u, v] for v in Graph.nodes if u != v) - gp.quicksum(
-                x[d, v, u] for v in Graph.nodes if u != v), name=f'flow_{d}_{u}')
+            if u not in ['Depot_s', 'Depot_t']:
+                m.addConstr(0 == gp.quicksum(x[d, u, v] for v in Graph.nodes if u != v) - gp.quicksum(
+                    x[d, v, u] for v in Graph.nodes if u != v), name=f'flow_{d}_{u}')
 
     # Depot constraints
     for d in range(N_drones):
-        m.addConstr(1 == gp.quicksum(x[d, i, 'Depot'] for i in Graph.nodes if i != 'Depot'),
+        m.addConstr(1 == gp.quicksum(x[d, i, 'Depot_t'] for i in Graph.nodes if i not in ['Depot_s', 'Depot_t']),
                     name=f"drone_{d}_depot_arrival")
-        m.addConstr(1 == gp.quicksum(x[d, 'Depot', i] for i in Graph.nodes if i != 'Depot'),
+        m.addConstr(1 == gp.quicksum(x[d, 'Depot_s', i] for i in Graph.nodes if i not in ['Depot_s', 'Depot_t']),
                     name=f"drone_{d}_leaves_depot")
 
     # time constraint (klappt noch nicht korrekt)
@@ -76,7 +79,7 @@ def VRP(Graph, drone_data):
     for d in range(N_drones):
         for u in Graph.nodes:
             for v in Graph.nodes:
-                if u != v and v != 'Depot':
+                if u != v:
                     m.addConstr(
                         t[d, u] - t[d, v] + Graph.nodes[v]['duration'] + Graph.get_edge_data(u, v)['weight'] <= M * (
                                 1 - x[d, u, v]), name=f"Time_constr_{d}_{u}_{v}")
@@ -85,8 +88,11 @@ def VRP(Graph, drone_data):
     for d in range(N_drones):
         for u in Graph.nodes:
             for v in Graph.nodes:
-                if u != v and v != 'Depot':
+                if u != v:
                     m.addConstr(y[d, u] + Graph.get_edge_data(u, v)['weight'] * x[d, u, v] <= 10)
+
+    for d in range(N_drones):
+        m.addConstr(t[d, 'Depot_t'] <= maxTime, name=f'max_Time_{d}')
 
     m.write("test.lp")
     m.setParam('TimeLimit', 30)
@@ -95,15 +101,9 @@ def VRP(Graph, drone_data):
     # os.system("gedit test.lp &")
     # os.system("gedit test.sol &")
 
-    # for d in range(N_drones):
-    #     for (u, v) in Graph.edges:
-    #         if round(x[d, u, v].x) == 1:
-    #             print(f'Drohne {d} fliegt von {u} nach {v}.')
-    #         if round(x[d, v, u].x) == 1:
-    #             print(f'Drohne {d} fliegt von {v} nach {u}.')
-
-    depot = 'Depot'
-    all_paths = {}
+    print(f"Gesamtzeit ist {maxTime.x}.")
+    depot = 'Depot_s'
+    all_paths={}
     for d in range(N_drones):
         current_node = depot
         path = [depot]
@@ -115,17 +115,17 @@ def VRP(Graph, drone_data):
                         next_node = v
                         break
 
-            if next_node is None or next_node == depot:
-                path.append(depot)
+            if next_node is None or next_node == 'Depot_t':
+                path.append('Depot_t')
                 break
             path.append(next_node)
-            all_paths[d] = path
+            all_paths[d]=path
             current_node = next_node
         print(f'Drohne {d} Pfad: {" -> ".join(map(str, path))}')
 
     for d in range(N_drones):
         for n in all_paths[d]:
-            # if round(t[d, n].x) != 0:
+            #if round(t[d, n].x) != 0:
             print(f'Drohne {d} ist zu Zeitpunkt {t[d, n].x} an Knoten {n}.')
 
     x_values = {}
@@ -143,5 +143,4 @@ if __name__ == "__main__":
     with open('drone_data.json', 'r') as json_file:
         drones = json.load(json_file)
     VRP(Graph, drones)
-
 
