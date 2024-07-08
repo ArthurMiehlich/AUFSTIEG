@@ -9,7 +9,7 @@ import json
 def create_graph(missions):
     G = nx.DiGraph()
     for key, value in missions.items():
-        G.add_node(key, pos=value[0], duration=value[1], energy_consumption=value[2])
+        G.add_node(key, position=value[0], duration=value[1], energy_consumption=value[2])
     nodes = list(missions.keys())
     for i in range(len(nodes)):
         for j in range(i + 1, len(nodes)):
@@ -22,12 +22,13 @@ def create_graph(missions):
             G.add_edge(node2, node1, distance=distance, energy_consumption=distance)
 
     save_graph_data(G)
-    pos = nx.get_node_attributes(G, 'pos')
-    labels = nx.get_edge_attributes(G, 'weight')
+    position = nx.get_node_attributes(G, 'position')
+    labels = nx.get_edge_attributes(G, 'distance')
+
     for ind in labels:
         labels[ind] = round(labels[ind], 2)
-    nx.draw(G, pos, with_labels=True, node_size=100, node_color='skyblue', font_size=10)
-    # nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+    nx.draw(G, position, with_labels=True, node_size=100, node_color='skyblue', font_size=10)
+    # nx.draw_networkx_edge_labels(G, position, edge_labels=labels)
     # plt.show()
     plt.savefig('Graph.pdf')
 
