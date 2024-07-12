@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 'C': [(4, 3), 2, 2], 'D': [(3, -3), 2, 2], 'E': [(1, -3), 2, 2], 'F': [(-3, -1), 2, 2],
                 'G': [(-4, 0), 2, 2]}
 
-    #missions=get_random_instance(20,True)
+    missions=get_random_instance(20,True)
 
     # [velocity, max energy, route]
     drones = {'quadro1': {'velocity': 1, 'energy_capacity': 30, 'current_optimal_path': [], 'total_travel_time': None},
