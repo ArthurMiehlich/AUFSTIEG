@@ -14,7 +14,6 @@ import json
 ########################################################################################################################
 
 
-
 def VRP(Graph, drone_data):
     drone_names = drone_data.keys()
     m = gp.Model('VRP')
@@ -46,7 +45,8 @@ def VRP(Graph, drone_data):
     obj = (gp.quicksum(
         gp.quicksum(
             gp.quicksum(
-                Graph.get_edge_data(u, v)['distance'] * 1 / drone_data[d]['performance']['multicopter']['cruise_speed_mDs'] * (x[d, u, v])
+                Graph.get_edge_data(u, v)['distance'] * 1 / drone_data[d]['performance']['multicopter'][
+                    'cruise_speed_mDs'] * (x[d, u, v])
                 for u in Graph.nodes if u != v)
             for v in Graph.nodes)
         for d in drone_names)
@@ -85,7 +85,8 @@ def VRP(Graph, drone_data):
                 if u != v:
                     m.addConstr(
                         t[d, u] - t[d, v] + Graph.nodes[v]['duration'] + Graph.get_edge_data(u, v)['distance'] * 1 /
-                        drone_data[d]['performance']['multicopter']['cruise_speed_mDs'] <= M * (1 - x[d, u, v]), name=f"Time_constr_{d}_{u}_{v}")
+                        drone_data[d]['performance']['multicopter']['cruise_speed_mDs'] <= M * (1 - x[d, u, v]),
+                        name=f"Time_constr_{d}_{u}_{v}")
 
     # # energy constraint (klappt noch nicht korrekt)
     # for d in drone_names:
@@ -126,14 +127,14 @@ def VRP(Graph, drone_data):
             current_node = next_node
         all_paths[d] = path
         print(f'Drohne {d} Pfad: {" -> ".join(map(str, path))}')
-    write_missions('missions1.json',all_paths)
+    write_missions('missions1.json', all_paths)
     for d in drone_names:
         for n in all_paths[d]:
-            rest_energy=round(drone_data[d]['performance']['multicopter']['energy_capacity_J']-t[d, n].x,1)
-            print(f'Drohne {d} ist zu Zeitpunkt {round(t[d, n].x,1)} an Knoten {n}.')
+            rest_energy = round(drone_data[d]['performance']['multicopter']['energy_capacity_J'] - t[d, n].x, 1)
+            print(f'Drohne {d} ist zu Zeitpunkt {round(t[d, n].x, 1)} an Knoten {n}.')
             # mit verbleibenden Energiereserven von {rest_energy}.')
         drone_data[d]['current_optimal_path'] = all_paths[d]
-        drone_data[d]['total_travel_time']=t[d, 'Depot_t'].x
+        drone_data[d]['total_travel_time'] = t[d, 'Depot_t'].x
 
     x_values = {}
     for d in drone_names:
