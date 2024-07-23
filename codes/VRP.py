@@ -139,7 +139,8 @@ def VRP(Graph, drone_data):
 
 if __name__ == "__main__":
     # reading in data
-    Graph = nx.read_gml("graph.gml")
+    with open('graph.json', 'r') as json_file:
+        Graph = json.load(json_file)
     with open('drone_data.json', 'r') as json_file:
         drones = json.load(json_file)
     VRP(Graph, drones)

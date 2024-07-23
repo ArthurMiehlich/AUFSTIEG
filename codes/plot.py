@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 def plot_sol(Graph,x,drone_names):
+    plt.figure()
     color_dict={}
     colors=['r', 'g', 'b', 'c']
     for ind, name in enumerate(drone_names):
         color_dict[name]=colors[ind]
-    pos = nx.get_node_attributes(Graph, 'position')
+    pos = nx.get_node_attributes(Graph, 'pos')
     #nx.draw(Graph, pos, with_labels=True, node_size=80, node_color='skyblue', font_size=10, alpha=0.1)
     nx.draw_networkx_nodes(Graph, pos, node_size=80, node_color='skyblue')
 

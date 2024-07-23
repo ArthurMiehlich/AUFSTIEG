@@ -1,4 +1,4 @@
-from create_data import *
+from data_work import *
 from plot import *
 import gurobipy as gp
 from gurobipy import GRB
@@ -13,13 +13,6 @@ import json
 ##                                                                                                                    ##
 ########################################################################################################################
 
-def read_data():
-    with open('graph.json', 'r') as json_file:
-        data = json.load(json_file)
-    Graph = nx.node_link_graph(data)
-    with open('drone_data.json', 'r') as json_file:
-        drones = json.load(json_file)
-    return Graph, drones
 
 
 def VRP(Graph, drone_data):
@@ -53,7 +46,7 @@ def VRP(Graph, drone_data):
     obj = (gp.quicksum(
         gp.quicksum(
             gp.quicksum(
-                Graph.get_edge_data(u, v)['distance'] * 1 / drone_data[d]['velocity'] * (x[d, u, v])
+                Graph.get_edge_data(u, v)['distance'] * 1 / drone_data[d]['performance']['multicopter']['cruise_speed_mDs'] * (x[d, u, v])
                 for u in Graph.nodes if u != v)
             for v in Graph.nodes)
         for d in drone_names)
@@ -85,14 +78,14 @@ def VRP(Graph, drone_data):
                     name=f"drone_{d}_leaves_depot")
 
     # time constraint (klappt noch nicht korrekt)
-    M = 1000
+    M = 1000000
     for d in drone_names:
         for u in Graph.nodes:
             for v in Graph.nodes:
                 if u != v:
                     m.addConstr(
                         t[d, u] - t[d, v] + Graph.nodes[v]['duration'] + Graph.get_edge_data(u, v)['distance'] * 1 /
-                        drone_data[d]['velocity'] <= M * (1 - x[d, u, v]), name=f"Time_constr_{d}_{u}_{v}")
+                        drone_data[d]['performance']['multicopter']['cruise_speed_mDs'] <= M * (1 - x[d, u, v]), name=f"Time_constr_{d}_{u}_{v}")
 
     # # energy constraint (klappt noch nicht korrekt)
     # for d in drone_names:
@@ -130,18 +123,17 @@ def VRP(Graph, drone_data):
                 path.append('Depot_t')
                 break
             path.append(next_node)
-            all_paths[d] = path
             current_node = next_node
+        all_paths[d] = path
         print(f'Drohne {d} Pfad: {" -> ".join(map(str, path))}')
-
+    write_missions('missions1.json',all_paths)
     for d in drone_names:
         for n in all_paths[d]:
-            rest_energy=round(drone_data[d]['energy_capacity']-t[d, n].x,1)
+            rest_energy=round(drone_data[d]['performance']['multicopter']['energy_capacity_J']-t[d, n].x,1)
             print(f'Drohne {d} ist zu Zeitpunkt {round(t[d, n].x,1)} an Knoten {n}.')
             # mit verbleibenden Energiereserven von {rest_energy}.')
         drone_data[d]['current_optimal_path'] = all_paths[d]
         drone_data[d]['total_travel_time']=t[d, 'Depot_t'].x
-    save_drone_data(drone_data)
 
     x_values = {}
     for d in drone_names:
@@ -154,5 +146,5 @@ def VRP(Graph, drone_data):
 
 if __name__ == "__main__":
     # reading in data
-    Graph, drones = read_data()
+    Graph, drones = read_instance('instance1.json')
     VRP(Graph, drones)
