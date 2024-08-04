@@ -1,0 +1,68 @@
+{
+  "uav-1-mission-1": {
+    "feasible": true,
+    "margins": {
+      "energy_J": 609082.5309785199
+    },
+    "task_performance": [
+      {
+        "before": {
+          "time_s": 0.0,
+          "energy_J": 720000.0
+        },
+        "after": {
+          "time_s": 0.0,
+          "energy_J": 720000.0
+        }
+      },
+      {
+        "before": {
+          "time_s": 165.34417060963088,
+          "energy_J": 670396.7488171108
+        },
+        "after": {
+          "time_s": 165.34417060963088,
+          "energy_J": 670396.7488171108
+        }
+      },
+      {
+        "before": {
+          "time_s": 369.7248967382667,
+          "energy_J": 609082.5309785199
+        },
+        "after": {
+          "time_s": 369.7248967382667,
+          "energy_J": 609082.5309785199
+        }
+      }
+    ]
+  },
+  "uav-2-mission-1": {
+    "feasible": false,
+    "margins": {
+      "energy_J": -285201.54297976755
+    },
+    "task_performance": [
+      {
+        "before": {
+          "time_s": 0.0,
+          "energy_J": 720000.0
+        },
+        "after": {
+          "time_s": 0.0,
+          "energy_J": 720000.0
+        }
+      },
+      {
+        "before": {
+          "time_s": 2513.003857449419,
+          "energy_J": -285201.54297976755
+        },
+        "after": {
+          "time_s": 2513.003857449419,
+          "energy_J": -285201.54297976755
+        }
+      }
+    ]
+  }
+}
