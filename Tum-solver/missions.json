@@ -1,0 +1,46 @@
+{
+  "uav-1-mission-1": {
+    "aircraft_id": "uav-1",
+    "mission": {
+      "tasks": [
+        {
+          "task": "departure",
+          "details": {
+            "point": "vertiport-1"
+          }
+        },
+        {
+          "task": "waypoint",
+          "details": {
+            "point": "waypoint-3"
+          }
+        },
+        {
+          "task": "waypoint",
+          "details": {
+            "point": "vertiport-2"
+          }
+        }
+      ]
+    }
+  },
+  "uav-2-mission-1": {
+    "aircraft_id": "uav-2",
+    "mission": {
+      "tasks": [
+        {
+          "task": "departure",
+          "details": {
+            "point": "vertiport-4"
+          }
+        },
+        {
+          "task": "arrival",
+          "details": {
+            "point": "vertiport-8"
+          }
+        }
+      ]
+    }
+  }
+}
